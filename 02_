@@ -1,2 +1,0 @@
-#Data reload
-load("data/processed/proteomics_processed.RData")
