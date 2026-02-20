@@ -21,7 +21,7 @@ proteinGroup = proteinGroup[proteinGroup$`Sequence coverage [%]` >= 5]
 
 #Extracting LFQ intensity matrix
 lfqData = grep("LFQ intensity", colnames(proteinGroup), value= T)
-expMatrix = proteinGroup[, ..lfqData]
+expMatrix = as.matrix(proteinGroup[, ..lfqData])
 rownames(expMatrix) = make.unique(proteinGroup$`Protein IDs`)
 expMatrix[expMatrix == "" | expMatrix == 0] = NA
 
