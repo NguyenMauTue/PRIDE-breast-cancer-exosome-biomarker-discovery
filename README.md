@@ -20,6 +20,7 @@ Proteomics data were obtained from the PRIDE Archive.
 
 Dataset ID
 PXD056161
+PRIDE dataset: https://www.ebi.ac.uk/pride/archive/projects/PXD056161
 
 Original study:
 
