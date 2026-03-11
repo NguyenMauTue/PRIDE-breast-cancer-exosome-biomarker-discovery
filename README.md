@@ -56,15 +56,15 @@ Original data processing:
 
 The bioinformatics pipeline consists of several stages:
 
-1. Data loading and preprocessing
-2. Quality control and replicate validation
-3. Protein filtering (peptide count and sequence coverage)
-4. Log2 transformation of LFQ intensities
-5. Missing value modeling (MNAR detection)
-6. Left-shifted Gaussian imputation
-7. Median normalization
-8. Differential expression analysis using limma
-9. Principal Component Analysis
+01. Data loading and preprocessing
+02. Quality control and replicate validation
+03. Protein filtering (peptide count and sequence coverage)
+04. Log2 transformation of LFQ intensities
+05. Missing value modeling (MNAR detection)
+06. Left-shifted Gaussian imputation
+07. Median normalization
+08. Differential expression analysis using limma
+09. Principal Component Analysis
 10. Protein–protein interaction network construction using the STRING database
 11. Network topology analysis (degree, betweenness centrality)
 12. PCA-based multi-feature integration
