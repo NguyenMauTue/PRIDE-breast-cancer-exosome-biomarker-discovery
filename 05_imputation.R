@@ -57,9 +57,6 @@ saveRDS(imputed_matrix,
 # Distribution check
 ############################################################
 
-png("../results/imputation_distribution_check.png",
-    width = 1200, height = 900)
-
 hist(as.vector(log_lfq_matrix),
      breaks = 50,
      col = rgb(0,0,1,0.5),
