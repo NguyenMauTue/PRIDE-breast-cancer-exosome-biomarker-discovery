@@ -98,6 +98,10 @@ fit_cc =
 result_cc =
   topTable(fit_cc, number = Inf)
 
+write.csv(
+  result_cc,
+  "../results/complete_case_DEA.csv"
+)
 
 ############################################################
 # Compare statistics
