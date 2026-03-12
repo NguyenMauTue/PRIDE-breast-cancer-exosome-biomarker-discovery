@@ -31,6 +31,8 @@ colnames(collapsed_matrix) = unique_bio
 nor_col = grep("^Normal", colnames(collapsed_matrix))
 tum_col = grep("^Tumor", colnames(collapsed_matrix))
 
+saveRDS(collapsed_matrix,
+        "../data/collapsed_matrix.rds")
 # Retain proteins detected in at least two samples
 # within either biological condition
 filtered_matrix = collapsed_matrix[
