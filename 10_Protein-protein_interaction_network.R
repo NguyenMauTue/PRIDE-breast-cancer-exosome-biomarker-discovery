@@ -5,7 +5,7 @@
 # Gene symbols exported from pathway enrichment
 
 gene_symbols =
-  read.table("../results/genes_for_STRING.txt",
+  read.table("results/genes_for_STRING.txt",
              stringsAsFactors = FALSE)[,1]
 
 # Network construction was performed using the STRING database
@@ -26,7 +26,7 @@ gene_symbols =
 # Extract STRING PPI network
 ############################################################
 
-ppi = read.delim("string_interactions.tsv")
+ppi = read.delim("../data/string_interactions.tsv")
 
 ppi_high = ppi[ppi$combined_score > 0.7, ]
 
