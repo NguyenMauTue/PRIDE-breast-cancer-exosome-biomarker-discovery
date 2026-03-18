@@ -3,9 +3,6 @@
 ############################################################
 
 library(dplyr)
-library(ggplot2)
-library(forcats)
-library(stringr)
 library(clusterProfiler)
 library(org.Hs.eg.db)
 
