@@ -145,7 +145,7 @@ Analysis performed in R (v4.5.2) using:
 
 ## Reproducibility
 
-All scripts are available in the `scripts/` directory and are designed 
+All scripts are available in the `scripts` branch (not on main, to keep the default branch clean for documentation). and are designed 
 to be run sequentially. Raw proteomics data can be downloaded directly 
 from PRIDE using dataset identifier **PXD056161** — script 01 loads 
 the data automatically via FTP.
