@@ -8,7 +8,7 @@ limmanetwork_df = read.csv("results/limma_network_table.csv")
 
 ahp_weights <- function(M) {
   n      <- nrow(M)
-  norm   <- sweep(M, 2, colSums(M), "/")  # normalize từng cột
+  norm   <- sweep(M, 2, colSums(M), "/")  # normalize each col
   w      <- rowMeans(norm)                 # row mean = priority vector
   lambda <- mean((M %*% w) / w)
   CI     <- (lambda - n) / (n - 1)
@@ -68,7 +68,7 @@ base_ranks <- limmanetwork_df |>
   dplyr::mutate(rank_base = dplyr::row_number()) |>
   dplyr::select(UNIPROT, Symbol, rank_base)
 
-# Perturb từng weight, tính CDS mới, lấy rank
+# Perturb for each weight, calculate new CDS, ranking
 perturb_grid <- expand.grid(
   w_idx   = 1:4,
   p_factor = seq(0.8, 1.2, 0.1)
@@ -114,4 +114,3 @@ output_df <- limmanetwork_df |>
   dplyr::arrange(rank_base)
 
 write.csv(output_df, "results/CDS_candidates_annotated.csv", row.names = FALSE)
-
