@@ -6,7 +6,7 @@ library(biomaRt)
 library(dplyr)
 
 #Load driver scores
-Driver_table = read.csv("../results/driver_scores.csv")
+Driver_table = read.csv("../results/CDS_candidates_annotated.csv")
 
 #Chọn mart cho human
 mart = useMart(
