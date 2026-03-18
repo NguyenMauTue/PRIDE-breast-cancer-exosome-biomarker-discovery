@@ -202,10 +202,8 @@ gene_symbols =
 # Export gene list for STRING network
 ############################################################
 
-write.table(
-  gene_symbols,
-  "../results/genes_for_STRING.txt",
-  row.names = FALSE,
-  col.names = FALSE,
-  quote = FALSE
-)
+gene_lists =
+  strsplit(
+    gsea_reactome_res$core_enrichment, 
+    "/"
+  )
