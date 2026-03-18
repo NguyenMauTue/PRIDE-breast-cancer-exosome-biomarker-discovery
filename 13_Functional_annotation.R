@@ -8,7 +8,7 @@ library(dplyr)
 #Load driver scores
 Driver_table = read.csv("../results/CDS_candidates_annotated.csv")
 
-#Chọn mart cho human
+#Choosing mart for human
 mart = useMart(
   "ensembl",
   dataset = "hsapiens_gene_ensembl"
