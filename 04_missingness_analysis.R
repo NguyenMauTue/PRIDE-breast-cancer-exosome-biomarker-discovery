@@ -147,4 +147,4 @@ write.csv(pattern_df,
 write.csv(exclusive_df,
           "../data/exclusive_3v0_proteins.csv",
           row.names = TRUE)
-)
+
