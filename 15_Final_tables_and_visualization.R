@@ -1,5 +1,5 @@
 ############################################################
-# 16 Final tables and visualization
+# 15 Final tables and visualization
 ############################################################
 
 library(ggplot2)
@@ -8,19 +8,9 @@ library(openxlsx)
 
 filtered_themed =
   read.csv("../results/BiomarkerCandidates_themed.csv")
-limma_network_table =
-  read.csv("../results/limma_network_table.csv")
 
-#Filter candidate
-filtered_themed =
-  filtered_themed[
-    filtered_themed$Num_Themes_Match >= 1,
-  ]
 
 #Summary table
-filtered_themed <- merge(filtered_themed, limma_network_table[, c("UNIPROT","adj.P.Val", "logFC")], 
-                         by.x = "UNIPROT", by.y = "UNIPROT", all.x = TRUE)
-
 
 summarized_df =
   filtered_themed[
@@ -30,9 +20,10 @@ summarized_df =
       "Symbol",
       "logFC",
       "adj.P.Val",
-      "ExprScore",
-      "NetScore",
-      "DriverScore",
+      "degree",
+      "betweenness",
+      "CDS",
+      "robustness_label",
       "Localization",
       "PubMed_hits"
     )
@@ -68,63 +59,73 @@ writeData(wb,"Membrane",membrane_df)
 addWorksheet(wb,"Extracellular")
 writeData(wb,"Extracellular",extracellular_df)
 
-addWorksheet(wb,"Intracellular")
-writeData(wb,"Intracellular",intracellular_df)
-
 addWorksheet(wb,"Vesicle_exosome")
 writeData(wb,"Vesicle_exosome",vesicle_exosome_df)
 
 saveWorkbook(
   wb,
-  "../results/Localization_tables.xlsx",
+  "results/Localization_tables.xlsx",
   overwrite=TRUE
 )
 
 #Plot driver landscape
-top10_df =
-  summarized_df[
-    order(-summarized_df$DriverScore),
-  ][1:10,]
+top20_df <- summarized_df |>
+  arrange(desc(CDS)) |>
+  head(20)
 
-p1 =
-  ggplot(summarized_df,
-         aes(x=ExprScore,y=NetScore)) +
-  geom_point(color="grey50") +
-  geom_point(data=top10_df,
-             color="red",
-             size=3) +
+p1 <- ggplot(summarized_df,
+             aes(x = logFC, y = log1p(degree), color = CDS)) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  geom_point(data = top20_df,
+             size = 3.5,
+             shape = 21,
+             color = "black",
+             aes(fill = CDS)) +
   geom_text_repel(
-    data=top10_df,
-    aes(label=Symbol)
+    data = top20_df,
+    aes(label = Symbol),
+    size = 3,
+    color = "black"
+  ) +
+  scale_color_gradient(low = "grey80", high = "red") +
+  scale_fill_gradient(low = "grey80", high = "red") +
+  labs(
+    x = "Log2 Fold Change",
+    y = "Network Degree (log1p)",
+    color = "CDS",
+    fill = "CDS",
+    title = "Driver Candidate Landscape"
   ) +
   theme_classic()
 
+p1
+
 ggsave(
-  "../results/DriverScore_network_plot.png",
+  "../results/DriverScore_landscape_plot.png",
   p1,
-  width=6,
-  height=5
+  width = 6,
+  height = 5
 )
+
 
 #Novelty analysis
 filtered_themed$novel =
-  filtered_themed$PubMed_hits <
-  quantile(filtered_themed$PubMed_hits,0.25) &
-  filtered_themed$DriverScore > 1
+  filtered_themed$PubMed_hits < quantile(filtered_themed$PubMed_hits, 0.25) &
+  filtered_themed$CDS > quantile(filtered_themed$CDS, 0.75)
 
 p2 =
   ggplot(filtered_themed,
          aes(x=PubMed_hits,
-             y=DriverScore)) +
+             y=CDS)) +
   geom_point(aes(color=novel),
              size=3,
              alpha=0.8) +
   scale_x_log10() +
-  geom_hline(yintercept=1,
+  geom_hline(yintercept= quantile(filtered_themed$CDS, 0.75),
              linetype="dashed") +
   geom_vline(
     xintercept=
-      quantile(filtered_themed$PubMed_hits,0.25),
+      quantile(filtered_themed$PubMed_hits, 0.25),
     linetype="dashed"
   ) +
   scale_color_manual(values=c("grey70","red")) +
@@ -134,6 +135,8 @@ p2 =
     aes(label=Symbol),
     size=3
   )
+
+p2
 
 ggsave(
   "../results/Literature_novelty_plot.png",
