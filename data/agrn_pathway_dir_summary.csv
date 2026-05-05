@@ -1,0 +1,43 @@
+"pathway_name","n_proteins","n_up","n_down","n_sig","pct_same_dir"
+"Homo sapiens: ECM proteoglycans",7,7,0,7,100
+"Homo sapiens: Formation of the dystrophin-glycoprotein complex (DGC)",4,4,0,4,100
+"Homo sapiens: Integrin cell surface interactions",10,10,0,9,100
+"Homo sapiens: NCAM signaling for neurite out-growth",4,4,0,0,100
+"Homo sapiens: Extracellular matrix organization",16,15,1,14,93.8
+"Homo sapiens: Non-integrin membrane-ECM interactions",12,11,1,11,91.7
+"Homo sapiens: SARS-CoV Infections",11,10,1,6,90.9
+"Homo sapiens: Axon guidance",19,17,2,12,89.5
+"Homo sapiens: Nervous system development",19,17,2,12,89.5
+"Homo sapiens: Developmental Biology",35,30,5,22,85.7
+"Homo sapiens: SARS-CoV-2 Infection",6,5,1,4,83.3
+"Homo sapiens: Viral Infection Pathways",23,19,4,9,82.6
+"Homo sapiens: Glycosaminoglycan metabolism",4,3,1,3,75
+"Homo sapiens: Infectious disease",36,27,9,16,75
+"Homo sapiens: Disease",45,33,12,20,73.3
+"Homo sapiens: Metabolism",10,7,3,5,70
+"Homo sapiens: Dengue Virus Infection",13,9,4,4,69.2
+"Homo sapiens: Attachment and Entry",3,2,1,2,66.7
+"Homo sapiens: Defective B3GALT6 causes EDSP2 and SEMDJL1",3,2,1,2,66.7
+"Homo sapiens: Defective B3GAT3 causes JDSSDHD",3,2,1,2,66.7
+"Homo sapiens: Defective B4GALT7 causes EDS, progeroid type",3,2,1,2,66.7
+"Homo sapiens: Defective EXT1 causes exostoses 1, TRPS2 and CHDS",3,2,1,2,66.7
+"Homo sapiens: Defective EXT2 causes exostoses 2",3,2,1,2,66.7
+"Homo sapiens: Dengue Virus Attachment and Entry",3,2,1,2,66.7
+"Homo sapiens: Diseases associated with glycosaminoglycan metabolism",3,2,1,2,66.7
+"Homo sapiens: Diseases of glycosylation",3,2,1,2,66.7
+"Homo sapiens: Diseases of metabolism",3,2,1,2,66.7
+"Homo sapiens: Early SARS-CoV-2 Infection Events",3,2,1,2,66.7
+"Homo sapiens: Glycosaminoglycan-protein linkage region biosynthesis",3,2,1,2,66.7
+"Homo sapiens: HS-GAG biosynthesis",3,2,1,2,66.7
+"Homo sapiens: HS-GAG degradation",3,2,1,2,66.7
+"Homo sapiens: Heparan sulfate/heparin (HS-GAG) metabolism",3,2,1,2,66.7
+"Homo sapiens: Metabolism of carbohydrates and carbohydrate derivatives",6,4,2,4,66.7
+"Homo sapiens: Metabolism of fat-soluble vitamins",3,2,1,2,66.7
+"Homo sapiens: RSV-host interactions",3,2,1,2,66.7
+"Homo sapiens: Respiratory Syncytial Virus Infection Pathway",3,2,1,2,66.7
+"Homo sapiens: Respiratory syncytial virus (RSV) attachment and entry",3,2,1,2,66.7
+"Homo sapiens: Retinoid metabolism and transport",3,2,1,2,66.7
+"Homo sapiens: Dengue Virus-Host Interactions",10,6,4,3,60
+"Homo sapiens: Sensory Perception",10,6,4,5,60
+"Homo sapiens: Visual phototransduction",5,3,2,3,60
+"Homo sapiens: Metabolism of vitamins and cofactors",4,2,2,2,50
