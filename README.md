@@ -1,169 +1,124 @@
 # PRIDE Breast Cancer Exosome Biomarker Discovery
 
-Bioinformatics pipeline for prioritizing candidate protein biomarkers 
-in breast cancer–derived exosomes using public LFQ proteomics data.
+### A reproducible pipeline implementing the Composite Driver Score (CDS) framework for exosomal protein biomarker prioritisation in triple-negative breast cancer
 
 ---
 
-## Biological Background
-
-Extracellular vesicles (exosomes) play central roles in cancer biology,
-mediating intercellular communication, metastasis, and immune modulation.
-Proteins packaged into tumor-derived exosomes may serve as **non-invasive 
-biomarkers detectable through liquid biopsy**.
-
-This project investigates exosomal proteomic differences between breast 
-cancer and normal breast epithelial cells, and prioritizes candidate 
-proteins using a multi-criteria scoring approach. Given the exploratory 
-nature of the dataset (n=3 per condition), results are framed as 
-**hypothesis-generating candidate discovery** pending independent validation.
+> **Preprint:** [bioRxiv — link TBD]  
+> **Manuscript PDF:** [link TBD]  
+> **Data:** [PRIDE PXD056161](https://www.ebi.ac.uk/pride/archive/projects/PXD056161) · [PRIDE PXD012162](https://www.ebi.ac.uk/pride/archive/projects/PXD012162)
 
 ---
 
-## Dataset
+## 🔑 Key Idea
 
-| Field | Details |
+Most exosomal proteomics studies rank candidates by fold-change or statistical significance alone. This pipeline implements a **Composite Driver Score (CDS)** that integrates expression magnitude with network topology using an **Analytic Hierarchy Process (AHP)**, enabling prioritisation of proteins that are both differentially abundant and biologically embedded in functionally coherent networks.
+
+Rather than filtering by arbitrary FDR thresholds — inappropriate given n=3 per condition — CDS weights each criterion by its relative contribution to clinical detectability and biological plausibility. The result is a ranked, robustness-tested candidate list designed to generate experimentally testable hypotheses.
+
+---
+
+## 📦 Repository Structure
+
+```
+├── scripts/          # Full analysis pipeline (01–16, run sequentially)
+├── data/             # Input files (MaxQuant output, STRING network TSV)
+├── results/          # Final tables, DE results, GSEA objects
+└── figures/          # All manuscript and supplementary figures
+```
+
+> **Note:** Scripts are maintained on the `scripts` branch to keep `main` clean for documentation.
+
+---
+
+## ⚙️ How to Run
+
+```r
+# 1. Clone the repository
+# git clone https://github.com/NguyenMauTue/PRIDE-breast-cancer-exosome-biomarker-discovery
+
+# 2. Install dependencies (R >= 4.4)
+install.packages(c("dplyr", "ggplot2", "ggrepel", "limma", "igraph",
+                   "clusterProfiler", "ReactomePA", "biomaRt",
+                   "rentrez", "openxlsx", "patchwork", "circlize"))
+BiocManager::install(c("limma", "clusterProfiler", "ReactomePA",
+                       "biomaRt", "org.Hs.eg.db", "reactome.db"))
+
+# 3. Download raw data from PRIDE (PXD056161) — script 01 loads automatically via FTP
+
+# 4. Run pipeline sequentially
+source("scripts/run_all.R")
+# or manually: 01 → 02 → ... → 16
+```
+
+> A `sessionInfo()` export is saved to `results/sessionInfo.txt` after each full run.  
+> An `renv.lock` file is provided for full environment reproducibility.
+
+---
+
+## 📊 Outputs
+
+| File | Description |
 |---|---|
-| Dataset ID | PXD056161 |
-| PRIDE URL | https://www.ebi.ac.uk/pride/archive/projects/PXD056161 |
-| DOI | 10.1021/acs.jproteome.4c00795 |
-
-**Cell models:**
-- MCF-10A — non-tumorigenic breast epithelial cells (Normal)
-- MDA-MB-231 — triple-negative breast cancer cells (Tumor)
-
-**Biological material:** Extracellular vesicles (exosomes)
-
-**Proteomics workflow:**
-- Bottom-up proteomics, label-free quantification (LFQ)
-- Orbitrap Fusion mass spectrometer
-- MaxQuant/Andromeda search engine, Human UniProt reference proteome
+| `results/BiomarkerCandidates_final.xlsx` | Full ranked candidate table with CDS, localization, PubMed hits |
+| `results/limma_network_table.csv` | DE results merged with STRING network topology |
+| `results/agrn_pathway_dir_summary.csv` | AGRN satellite protein directionality by Reactome pathway |
+| `figures/volcano.png` | Volcano plot — differential expression |
+| `figures/DriverScore_landscape.png` | CDS landscape plot |
+| `figures/PPI_network.png` | STRING network with DE integration |
+| `figures/GO_enrichment.png` | GO enrichment dot plot |
+| `figures/16_AGRN_satellite_directionality.png` | AGRN pathway co-protein concordance |
 
 ---
 
-## Analysis Workflow
-```
-01_load_and_filter_data.R         # MaxQuant QC filtering
-02_metadata_and_matrix.R          # LFQ matrix construction, log2 transform
-03_quality_control.R              # Technical replicate PCA, correlation QC
-04_missingness_analysis.R         # MNAR characterization, logistic regression
-05_imputation.R                   # Left-shifted Gaussian imputation
-06_differential_expression.R      # limma DE analysis
-07_robustness_analysis.R          # Imputation sensitivity, complete-case comparison
-08_pathway_enrichment_analysis.R  # Reactome GSEA
-09_pathway_thematic_grouping.R    # Unbiased gene list export for STRING
-10_protein_protein_interaction.R  # STRING network construction (score > 0.7)
-11_network_expression_integration.R  # Merge DE results with network topology
-12_CDS_via_AHP.R                  # AHP-weighted Composite Driver Score + sensitivity analysis
-13_functional_annotation.R        # biomaRt GO annotation
-14_biological_theme_classification.R  # Post-hoc theme annotation, localization, PubMed mining
-15_final_tables_and_visualization.R   # Final candidates, plots, Excel export
-```
-
----
-
-## Methods Summary
+## ⚗️ Methods Summary
 
 ### Composite Driver Score (CDS)
-Candidate proteins were ranked using an AHP-weighted composite score 
-integrating four criteria:
+
+Candidates ranked by AHP-weighted composite of four criteria:
 
 | Criterion | Weight | Rationale |
 |---|---|---|
-| Fold Change (FC) | ~0.52 | Primary signal for clinical detectability |
-| FDR | ~0.16 | Downweighted due to limited statistical power (n=3) |
-| Betweenness centrality | ~0.08 | Network topology — supporting evidence |
-| Degree | ~0.24 | Network connectivity — supporting evidence |
+| Fold Change | ~0.52 | Primary signal for clinical detectability |
+| FDR | ~0.16 | Downweighted — limited power at n=3 |
+| Degree | ~0.24 | Network connectivity |
+| Betweenness centrality | ~0.08 | Network topology |
 
-Consistency Ratio (CR) < 0.1, confirming internal consistency of the 
-pairwise judgment matrix.
-
-All features were normalized to [0,1] prior to scoring. No statistical 
-pre-filtering was applied given the n=3 sample size per condition.
+Consistency Ratio (CR) < 0.1. All features normalised to [0,1] prior to scoring.
 
 ### Sensitivity Analysis
-AHP weights were perturbed ±20% across 5 levels per criterion. Proteins 
-with stable rank across all perturbations are labeled **robust_candidate**; 
-proteins with high rank variance (rank_sd > 1.5) are labeled 
-**weight_sensitive_candidate**.
 
-### Localization Filter
-Proteins with exclusively intracellular or nuclear localization (GO_CC) 
-were excluded as likely co-isolation contaminants, consistent with 
-exosome cargo biology. Histone proteins were additionally excluded based 
-on protein description annotation.
+AHP weights perturbed ±20% across 5 levels per criterion. Candidates labelled `robust_candidate` if rank is stable across all perturbations; `weight_sensitive_candidate` if rank SD > 1.5.
 
 ---
 
-## Key Findings
+## 🔬 Key Results
 
-The prioritization pipeline identified **47 candidate proteins** with 
-exosome-compatible localization profiles (extracellular, membrane, 
-vesicle/exosome compartments).
+CDS prioritisation converges on a coordinated **ECM/adhesion module** — integrins (ITGA2, ITGB1, ITGA3, ITGAV, ITGB4), fibronectin (FN1), and **AGRN** — as a coherent exosomal program in TNBC-derived vesicles.
 
-**Top candidates by CDS:**
+**AGRN** (rank 9, CDS = 0.505) emerges as the highest-priority novel candidate: detected across all 6 samples with zero missing values, cross-dataset logFC concordance confirmed (PXD056161: +2.98; PXD012162: +3.43), and embedded within ECM proteoglycan and integrin interaction pathways showing 100% directional concordance with co-occurring proteins.
 
-| Rank | Symbol | Localization | Robustness |
-|---|---|---|---|
-| 1 | CD47 | membrane | robust |
-| 2 | SDC1 | extracellular | robust |
-| 3 | NRAS | extracellular | robust |
-| 4 | LAMB2 | extracellular | robust |
-| 5 | CD36 | extracellular | robust |
-| 6 | TUBA1A | membrane | robust |
-| 7 | RAB7A | membrane | robust |
-| 8 | ACTB | extracellular | robust |
-| 9 | GRB2 | extracellular | robust |
-| 10 | FN1 | extracellular | robust |
-
-**Novel high-priority candidates** (high CDS, low PubMed hits):
-- TUBA1A
-- LAMB2
-
-CD47 (rank #1) has independent clinical validation in breast cancer 
-exosome cohorts, supporting the validity of the CDS prioritization approach.
+**FN1** (rank 1, CDS = 0.907) serves as a pipeline validation anchor — well-established in the exosome literature with 48 PubMed hits.
 
 ---
 
-## Software and Tools
+## ⚠️ Limitations
 
-Analysis performed in R (v4.5.2) using:
-
-| Package | Purpose |
-|---|---|
-| data.table, dplyr | Data manipulation |
-| ggplot2, ggrepel | Visualization |
-| limma | Differential expression |
-| igraph | Network analysis |
-| clusterProfiler, ReactomePA | Pathway enrichment |
-| biomaRt | Functional annotation |
-| rentrez | PubMed mining |
-| purrr | Sensitivity analysis |
-| openxlsx | Excel export |
+- **Sample size:** n=3 per condition limits statistical power; FDR thresholds not applied as pre-filters
+- **Cell line model:** MDA-MB-231 represents aggressive/metastatic TNBC; findings require validation in early-stage clinical specimens
+- **Single dataset primary:** Cross-dataset concordance (PXD012162) supports robustness but does not substitute for prospective validation
+- All results are **hypothesis-generating** and require independent experimental validation
 
 ---
 
-## Reproducibility
+## 🗂️ Biological Background
 
-All scripts are available in the `scripts` branch (not on main, to keep the default branch clean for documentation). and are designed 
-to be run sequentially. Raw proteomics data can be downloaded directly 
-from PRIDE using dataset identifier **PXD056161** — script 01 loads 
-the data automatically via FTP.
+Tumor-derived exosomes mediate intercellular communication, ECM remodelling, and immune modulation. Proteins packaged into these vesicles are detectable non-invasively via liquid biopsy, making them attractive early-detection biomarker candidates. This project reanalyses publicly available LFQ proteomics data comparing MDA-MB-231 (TNBC) vs. MCF-10A (normal breast epithelial) exosomes.
 
 ---
 
-## Limitations
+## 👤 Author
 
-- Sample size: n=3 per condition limits statistical power; 
-  adj.P.Val thresholds were not applied as pre-filters
-- Cell line model: MDA-MB-231 represents aggressive/metastatic 
-  TNBC; findings require validation in early-stage clinical specimens
-- Results are hypothesis-generating and require independent 
-  experimental validation
-
----
-
-## Author
-
-Nguyen Mau Tue  
-*Documentation assistance provided with the help of AI tools.*
+**Nguyễn Mậu Tuệ**  
+University of Science, Vietnam National University Hanoi (K70)  
+*Analysis pipeline developed independently. Documentation assistance provided with the help of AI tools.*
