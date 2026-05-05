@@ -23,13 +23,8 @@ Rather than filtering by arbitrary FDR thresholds — inappropriate given n=3 pe
 ```
 ├── scripts/          # Full analysis pipeline (01–16, run sequentially)
 ├── data/             # Input files (MaxQuant output, STRING network TSV)
-├── results/          # Final tables, DE results, GSEA objects
-└── figures/          # All manuscript and supplementary figures
+└── results/          # Final tables, DE results, GSEA objects and all manuscript and supplementary figures
 ```
-
-> **Note:** Scripts are maintained on the `scripts` branch to keep `main` clean for documentation.
-
----
 
 ## ⚙️ How to Run
 
