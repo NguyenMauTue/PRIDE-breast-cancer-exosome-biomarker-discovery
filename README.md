@@ -4,9 +4,10 @@
 
 ---
 
-> **Preprint:** (https://www.biorxiv.org/content/10.64898/2026.05.14.725271v1)
-
-> **Manuscript PDF:** (https://www.biorxiv.org/content/10.64898/2026.05.14.725271v1)  
+> **Preprint:** [https://doi.org/10.64898/2026.05.14.725271](https://doi.org/10.64898/2026.05.14.725271)
+> 
+> **Manuscript PDF:** [bioRxiv PDF](https://www.biorxiv.org/content/10.64898/2026.05.14.725271v1.full.pdf)
+> 
 > **Data:** [PRIDE PXD056161](https://www.ebi.ac.uk/pride/archive/projects/PXD056161) · [PRIDE PXD012162](https://www.ebi.ac.uk/pride/archive/projects/PXD012162)
 
 ---
