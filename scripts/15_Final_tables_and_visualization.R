@@ -11,19 +11,17 @@ library(RColorBrewer)
 library(ComplexHeatmap)
 library(patchwork)
 library(circlize)
+library(xtable)
 
-
-filtered_themed =
+filtered_themed <-
   read.csv("../results/BiomarkerCandidates_themed.csv")
-imputed_matrix =
+imputed_matrix <-
   readRDS("../data/imputed_matrix.rds")
-imputed_result =
+imputed_result <-
   read.csv("../results/differential_expression_imputed.csv")
 
-
-#Summary table
-
-summarized_df =
+# Summary table — đổi Localization → Biological_Module + robustness_label
+summarized_df <-
   filtered_themed[
     ,
     c(
@@ -35,49 +33,83 @@ summarized_df =
       "betweenness",
       "CDS",
       "robustness_label",
-      "Localization",
+      "Biological_Module",
       "PubMed_hits"
     )
   ]
 
+# Abbreviate robustness_label
+summarized_df <- summarized_df |>
+  mutate(robustness_label = case_when(
+    robustness_label == "robust_candidate"          ~ "R",
+    robustness_label == "weight_sensitive_candidate" ~ "WS",
+    TRUE ~ robustness_label
+  ))
 
-#Split by localization
-listLocal = unique(summarized_df$Localization)
+# Split by Biological_Module cho Excel
+listModules <- unique(summarized_df$Biological_Module)
 
-get_Subset_Local = function(df,loc){
-  
-  clean_name = gsub("[^A-Za-z0-9]","_",loc)
-  
-  assign(
-    paste0(clean_name,"_df"),
-    subset(df,df$Localization==loc),
-    envir=.GlobalEnv
-  )
+# Excel export
+wb <- createWorkbook()
+
+addWorksheet(wb, "All")
+writeData(wb, "All", summarized_df)
+
+for (mod in listModules) {
+  clean_name <- gsub("[^A-Za-z0-9]", "_", mod)
+  clean_name <- substr(clean_name, 1, 31)  # Excel sheet name max 31 chars
+  addWorksheet(wb, clean_name)
+  writeData(wb, clean_name, subset(summarized_df, Biological_Module == mod))
 }
-
-for(loc in listLocal){
-  get_Subset_Local(summarized_df,loc)
-}
-
-#Excel export
-wb = createWorkbook()
-
-addWorksheet(wb,"All")
-writeData(wb,"All",summarized_df)
-
-addWorksheet(wb,"Membrane")
-writeData(wb,"Membrane",membrane_df)
-
-addWorksheet(wb,"Extracellular")
-writeData(wb,"Extracellular",extracellular_df)
-
-addWorksheet(wb,"Vesicle_exosome")
-writeData(wb,"Vesicle_exosome",vesicle_exosome_df)
 
 saveWorkbook(
   wb,
-  "../results/Localization_tables.xlsx",
-  overwrite=TRUE
+  "../results/Module_tables.xlsx",
+  overwrite = TRUE
+)
+
+# LaTeX export
+latex_df <- filtered_themed |>
+  arrange(desc(CDS)) |>
+  mutate(
+    robustness_short = case_when(
+      robustness_label == "robust_candidate"           ~ "R",
+      robustness_label == "weight_sensitive_candidate" ~ "WS",
+      TRUE ~ robustness_label
+    ),
+    logFC   = round(logFC, 3),
+    adj.P.Val = formatC(adj.P.Val, format = "e", digits = 1),
+    CDS     = round(CDS, 4)
+  ) |>
+  dplyr::select(Symbol, logFC, adj.P.Val, CDS, Biological_Module, robustness_short, PubMed_hits)
+
+colnames(latex_df) <- c(
+  "Gene",
+  "$\\log_2$FC",
+  "FDR",
+  "CDS",
+  "Module",
+  "Rob.",
+  "PubMed"
+)
+
+print(
+  xtable(
+    latex_df,
+    tabular.environment = "longtable",
+    floating = FALSE,
+    caption = "Full list of driver candidates ranked by AHP-weighted Composite Driver Score (CDS). 
+    Biological modules assigned via GO term hierarchy (GO.db): ECM = ECM \\& Cell Adhesion 
+    (GO:0031012, GO:0030198, GO:0007160); MS = Motility \\& Signaling (GO:0016477, GO:0000165, 
+    GO:0007265, GO:0035023); VT = Vesicle Trafficking (GO:0016192, GO:0036258). 
+    Robustness: R = robust candidate; WS = weight-sensitive candidate.",
+    label = "tab:candidates",
+    digits = c(0, 0, 3, 0, 4, 0, 0, 0)
+  ),
+  include.rownames  = FALSE,
+  sanitize.colnames.function = identity,
+  sanitize.text.function = identity,
+  file = "../results/Supplementary_Table1.tex"
 )
 
 #Plot driver landscape
