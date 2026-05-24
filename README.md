@@ -23,9 +23,13 @@ Rather than filtering by arbitrary FDR thresholds — inappropriate given n=3 pe
 ## 📦 Repository Structure
 
 ```
-├── scripts/          # Full analysis pipeline (01–16, run sequentially)
-├── data/             # Input files (MaxQuant output, STRING network TSV)
-└── results/          # Final tables, DE results, GSEA objects and all manuscript and supplementary figures
+├── scripts/              # Main analysis pipeline (01–16, run sequentially)
+├── data/                 # Input files (MaxQuant output, STRING network TSV)
+├── results/              # Final tables, DE results, GSEA objects and all figures
+├── Cross checking/       # Cross-dataset validation pipeline (PXD012162)
+│   ├── scripts/          # Mirrored pipeline for validation dataset
+│   └── results/          # Cross-validation outputs
+└── Master run_all.R      # Single entry point — runs both pipelines end-to-end
 ```
 
 ## ⚙️ How to Run
@@ -35,53 +39,50 @@ Rather than filtering by arbitrary FDR thresholds — inappropriate given n=3 pe
 # git clone https://github.com/NguyenMauTue/PRIDE-breast-cancer-exosome-biomarker-discovery
 
 # 2. Install dependencies (R >= 4.4)
-install.packages(c("dplyr", "ggplot2", "ggrepel", "limma", "igraph",
-                   "clusterProfiler", "ReactomePA", "biomaRt",
-                   "rentrez", "openxlsx", "patchwork", "circlize"))
+install.packages(c("dplyr", "ggplot2", "ggrepel", "openxlsx",
+                   "patchwork", "circlize", "rentrez", "xtable"))
 BiocManager::install(c("limma", "clusterProfiler", "ReactomePA",
-                       "biomaRt", "org.Hs.eg.db", "reactome.db"))
+                       "biomaRt", "org.Hs.eg.db", "reactome.db",
+                       "GO.db", "igraph"))
 
 # 3. Download raw data from PRIDE (PXD056161) — script 01 loads automatically via FTP
 
-# 4. Run pipeline sequentially
+# 4. Run full pipeline (main + cross-validation)
+source("Master run_all.R")
+
+# or run main pipeline only
 source("scripts/run_all.R")
-# or manually: 01 → 02 → ... → 16
 ```
 
 > A `sessionInfo()` export is saved to `results/sessionInfo.txt` after each full run.  
 > An `renv.lock` file is provided for full environment reproducibility.
 
----
-
 ## 📊 Outputs
 
 | File | Description |
 |---|---|
-| `results/BiomarkerCandidates_final.xlsx` | Full ranked candidate table with CDS, localization, PubMed hits |
+| `results/Module_tables.xlsx` | Full ranked candidate table with CDS, biological module, robustness, PubMed hits |
+| `results/Supplementary_Table1.tex` | LaTeX-ready longtable for manuscript Supplementary Material |
 | `results/limma_network_table.csv` | DE results merged with STRING network topology |
 | `results/agrn_pathway_dir_summary.csv` | AGRN satellite protein directionality by Reactome pathway |
-| `figures/volcano.png` | Volcano plot — differential expression |
-| `figures/DriverScore_landscape.png` | CDS landscape plot |
-| `figures/PPI_network.png` | STRING network with DE integration |
-| `figures/GO_enrichment.png` | GO enrichment dot plot |
-| `figures/16_AGRN_satellite_directionality.png` | AGRN pathway co-protein concordance |
+| `results/volcano.png` | Volcano plot — differential expression |
+| `results/DriverScore_landscape.png` | CDS landscape plot |
+| `results/PPI_network.png` | STRING network with DE integration |
+| `results/GO_enrichment.png` | GO enrichment dot plot |
+| `results/16_AGRN_satellite_directionality.png` | AGRN pathway co-protein concordance |
 
----
 
 ## ⚗️ Methods Summary
 
-### Composite Driver Score (CDS)
+### Biological Module Classification
 
-Candidates ranked by AHP-weighted composite of four criteria:
+Proteins assigned to biological modules via GO term hierarchy using `GO.db` (Bioconductor). Module membership determined by matching annotated GO term IDs against programmatically derived offspring sets of predefined root terms:
 
-| Criterion | Weight | Rationale |
-|---|---|---|
-| Fold Change | ~0.52 | Primary signal for clinical detectability |
-| FDR | ~0.16 | Downweighted — limited power at n=3 |
-| Degree | ~0.24 | Network connectivity |
-| Betweenness centrality | ~0.08 | Network topology |
-
-Consistency Ratio (CR) < 0.1. All features normalised to [0,1] prior to scoring.
+| Module | Root Terms |
+|---|---|
+| ECM & Cell Adhesion | GO:0031012, GO:0030198, GO:0007160 |
+| Motility & Signaling | GO:0016477, GO:0000165, GO:0007265, GO:0035023 |
+| Vesicle Trafficking | GO:0016192, GO:0036258 |
 
 ### Sensitivity Analysis
 
