@@ -40,7 +40,11 @@ annotations_grouped = annotations %>%
     Protein_Description = paste(unique(description), collapse="; "),
     GO_BP = paste(name_1006[namespace_1003=="biological_process"], collapse="; "),
     GO_CC = paste(name_1006[namespace_1003=="cellular_component"], collapse="; "),
-    GO_MF = paste(name_1006[namespace_1003=="molecular_function"], collapse="; ")
+    GO_MF = paste(name_1006[namespace_1003=="molecular_function"], collapse="; "),
+    # Thêm GO ID columns
+    GO_BP_IDs = paste(go_id[namespace_1003=="biological_process"], collapse="; "),
+    GO_CC_IDs = paste(go_id[namespace_1003=="cellular_component"], collapse="; "),
+    GO_MF_IDs = paste(go_id[namespace_1003=="molecular_function"], collapse="; ")
   ) %>%
   ungroup()
 
