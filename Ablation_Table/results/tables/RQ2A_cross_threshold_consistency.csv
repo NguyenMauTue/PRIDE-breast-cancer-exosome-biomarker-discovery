@@ -1,0 +1,3 @@
+"baseline","criterion","promoted_T10","demoted_T10","promoted_T15","demoted_T15","direction_consistent"
+"FC_only","P_Deg",0.402918904909115,0.134538218453518,0.415979933171671,0.0970939152679207,TRUE
+"Centrality_only","P_FC",0.59024468617236,0.263046935006901,0.6012373920089,0.253181422626534,TRUE
