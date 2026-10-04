@@ -1,31 +1,25 @@
 ############################################################
 # Master run_all.R
-# Runs complete pipeline: main + cross-validation
-# Prerequisites: renv::restore() to install dependencies
+# Runs the full AHP-CDS pipeline: PXD056161 -> Ablation_Table
+# Prerequisites: renv::restore() to install dependencies.
+# Open AHP-CDS.Rproj first so here::here() resolves correctly
+# (no setwd() needed).
 ############################################################
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-options(timeout = 3600)
 
-# ── 1. Main pipeline ────────────────────────────────────
-message("\n", strrep("=", 50))
-message("MAIN PIPELINE")
-message(strrep("=", 50))
-source("scripts/run all.R", chdir = TRUE)
+# ── 1. PXD056161 (primary dataset) ──────────────────────
+message("\n", strrep("=", 60))
+message("PXD056161 PIPELINE")
+message(strrep("=", 60))
+source(here::here("PXD056161", "scripts", "run_all.R"))
 
-# ── 2. Cross-validation pipeline ────────────────────────
-message("\n", strrep("=", 50))
-message("CROSS-VALIDATION PIPELINE")
-message(strrep("=", 50))
-source("Cross checking/scripts/run all.R", chdir = TRUE)
+# ── 2. Ablation_Table (depends on PXD056161 outputs) ────
+message("\n", strrep("=", 60))
+message("ABLATION TABLE PIPELINE")
+message(strrep("=", 60))
+source(here::here("Ablation_Table", "scripts", "run_all.R"))
 
-# ── 3. Visualization ────────────────────────
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-message("\n", strrep("=", 50))
-message("Final_visualization")
-message(strrep("=", 50))
-source("Visualization.R")
-# ── 3. Done ─────────────────────────────────────────────
-message("\n", strrep("=", 50))
+# ── Done ──────────────────────────────────────────────────
+message("\n", strrep("=", 60))
 message("ALL PIPELINES COMPLETE.")
-message("Results in: results/ and Cross checking/results/ and main folder")
-message(strrep("=", 50))
+message("Results in: PXD056161/results/, PXD012162/results/, Ablation_Table/results/")
+message(strrep("=", 60))
