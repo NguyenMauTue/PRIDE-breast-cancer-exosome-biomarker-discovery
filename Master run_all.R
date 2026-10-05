@@ -5,8 +5,9 @@
 # Open AHP-CDS.Rproj first so here::here() resolves correctly
 # (no setwd() needed).
 ############################################################
-
-# ── 1. PXD056161 (primary dataset) ──────────────────────
+# ── 0. Preamp ──────────────────────
+source(here::here("R", "Preamp", "fetch_annotation_table.R"))
+# ── 1. PXD056161 ──────────────────────
 message("\n", strrep("=", 60))
 message("PXD056161 PIPELINE")
 message(strrep("=", 60))
