@@ -5,9 +5,7 @@ Code for **AHP-CDS**, the method introduced in the preprint of the same title.
 <!-- [?] One sentence: what this repository is. Author's own words. -->
 
 - **Preprint:** https://doi.org/10.64898/2026.05.14.725271 (this README describes the code as of **v7**)
-- **Earlier version:** the README and code of preprint v1 are preserved in the git history under a tag. They describe a different analysis (AGRN-centred, weight-perturbation robustness labels) and do not match the current preprint.
-
-This README carries no result numbers on purpose. Results live in the preprint; this file only says what the code does, how to run it, and which file corresponds to which part of the paper.
+- **Earlier version:** the README and code of preprint v1 are preserved in archived, preprint-v1 folder. They describe a different analysis (AGRN-centred, weight-perturbation robustness labels) and do not match the current preprint.
 
 ---
 
@@ -24,7 +22,7 @@ This README carries no result numbers on purpose. Results live in the preprint; 
 ```r
 # open AHP-CDS.Rproj, then
 renv::restore()
-source("Master run_all.R")   # runs the preamp, the main pipeline and the ablation pipeline
+source("Master_run_all.R")   # runs the preamp, the main pipeline and the ablation pipeline
 ```
 
 **Order.**
