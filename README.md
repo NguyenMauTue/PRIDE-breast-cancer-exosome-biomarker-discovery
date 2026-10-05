@@ -1,122 +1,133 @@
-# PRIDE Breast Cancer Exosome Biomarker Discovery
+# Transparent Weighting of Heterogeneous Evidence for Auditable Candidate Prioritization
 
-### A reproducible pipeline implementing the Composite Driver Score (CDS) framework for exosomal protein biomarker prioritisation in triple-negative breast cancer
+Code for **AHP-CDS**, the method introduced in the preprint of the same title.
 
----
+<!-- [?] One sentence: what this repository is. Author's own words. -->
 
-> **Preprint:** [https://doi.org/10.64898/2026.05.14.725271](https://doi.org/10.64898/2026.05.14.725271)
-> 
-> **Manuscript PDF:** [bioRxiv PDF](https://www.biorxiv.org/content/10.64898/2026.05.14.725271v1.full.pdf)
-> 
-> **Data:** [PRIDE PXD056161](https://www.ebi.ac.uk/pride/archive/projects/PXD056161) · [PRIDE PXD012162](https://www.ebi.ac.uk/pride/archive/projects/PXD012162)
+- **Preprint:** https://doi.org/10.64898/2026.05.14.725271 (this README describes the code as of **v7**)
+- **Earlier version:** the README and code of preprint v1 are preserved in the git history under a tag. They describe a different analysis (AGRN-centred, weight-perturbation robustness labels) and do not match the current preprint.
 
----
-
-## 🔑 Key Idea
-
-Most exosomal proteomics studies rank candidates by fold-change or statistical significance alone. This pipeline implements a **Composite Driver Score (CDS)** that integrates expression magnitude with network topology using an **Analytic Hierarchy Process (AHP)**, enabling prioritisation of proteins that are both differentially abundant and biologically embedded in functionally coherent networks.
-
-Rather than filtering by arbitrary FDR thresholds — inappropriate given n=3 per condition — CDS weights each criterion by its relative contribution to clinical detectability and biological plausibility. The result is a ranked, robustness-tested candidate list designed to generate experimentally testable hypotheses.
+This README carries no result numbers on purpose. Results live in the preprint; this file only says what the code does, how to run it, and which file corresponds to which part of the paper.
 
 ---
 
-## 📦 Repository Structure
+## What this repository does
 
-```
-├── scripts/              # Main analysis pipeline (01–16, run sequentially)
-├── data/                 # Input files (MaxQuant output, STRING network TSV)
-├── results/              # Final tables, DE results, GSEA objects and all figures
-├── Cross checking/       # Cross-dataset validation pipeline (PXD012162)
-│   ├── scripts/          # Mirrored pipeline for validation dataset
-│   └── results/          # Cross-validation outputs
-└── Master run_all.R      # Single entry point — runs both pipelines end-to-end
-```
+<!-- [?] Author's section. The contribution as he states it (explicit, auditable multi-criteria integration rule), and the three research questions in his words. -->
 
-## ⚙️ How to Run
+---
+
+## Reproducing the analysis
+
+**Environment.** R 4.5.2 / Bioconductor 3.22 (`renv.lock`, 205 packages pinned).
 
 ```r
-# 1. Clone the repository
-# git clone https://github.com/NguyenMauTue/PRIDE-breast-cancer-exosome-biomarker-discovery
-
-# 2. Install dependencies (R >= 4.4)
-install.packages(c("dplyr", "ggplot2", "ggrepel", "openxlsx",
-                   "patchwork", "circlize", "rentrez", "xtable"))
-BiocManager::install(c("limma", "clusterProfiler", "ReactomePA",
-                       "biomaRt", "org.Hs.eg.db", "reactome.db",
-                       "GO.db", "igraph"))
-
-# 3. Download raw data from PRIDE (PXD056161) — script 01 loads automatically via FTP
-
-# 4. Run full pipeline (main + cross-validation)
-source("Master run_all.R")
-
-# or run main pipeline only
-source("scripts/run_all.R")
+# open AHP-CDS.Rproj, then
+renv::restore()
+source("Master run_all.R")   # runs the preamp, the main pipeline and the ablation pipeline
 ```
 
-> A `sessionInfo()` export is saved to `results/sessionInfo.txt` after each full run.  
-> An `renv.lock` file is provided for full environment reproducibility.
+**Order.**
+0. `R/Preamp/fetch_annotation_table.R`, the *preamp* (short for preamplifier: the step that runs first). It has to run before the main pipeline, because the main pipeline reads the annotation table it builds (biomaRt query). `Master run_all.R` calls it first.
+1. `PXD056161/scripts/run_all.R`, scripts 01–12: data → QC → imputation → limma → GSEA → STRING network → AHP-CDS scoring.
+2. `Ablation_Table/scripts/run_all.R`: baselines, RWR comparator, RQ1, RQ2, and the tier/G* analysis. It reads the outputs of the main pipeline in `PXD056161/results/`.
 
-## 📊 Outputs
+**Input data.** PRIDE PXD056161, MDA-MB-231 vs MCF-10A, nanoLC-MS arm, n = 3 per condition. Script 01 downloads the file from PRIDE and applies the MaxQuant-based filtering, so nothing has to be placed by hand.
 
-| File | Description |
-|---|---|
-| `results/Module_tables.xlsx` | Full ranked candidate table with CDS, biological module, robustness, PubMed hits |
-| `results/Supplementary_Table1.tex` | LaTeX-ready longtable for manuscript Supplementary Material |
-| `results/limma_network_table.csv` | DE results merged with STRING network topology |
-| `results/agrn_pathway_dir_summary.csv` | AGRN satellite protein directionality by Reactome pathway |
-| `results/volcano.png` | Volcano plot — differential expression |
-| `results/DriverScore_landscape.png` | CDS landscape plot |
-| `results/PPI_network.png` | STRING network with DE integration |
-| `results/GO_enrichment.png` | GO enrichment dot plot |
-| `results/16_AGRN_satellite_directionality.png` | AGRN pathway co-protein concordance |
+**External resources.** STRING, Reactome, Ensembl BioMart and CTD were queried in August 2026. Live services change, so a re-run later may not reproduce the same pool. The CTD export in `Ablation_Table/data/CTD_curated_genes_diseases.csv` is the frozen snapshot used for the paper.
 
-
-## ⚗️ Methods Summary
-
-### Biological Module Classification
-
-Proteins assigned to biological modules via GO term hierarchy using `GO.db` (Bioconductor). Module membership determined by matching annotated GO term IDs against programmatically derived offspring sets of predefined root terms:
-
-| Module | Root Terms |
-|---|---|
-| ECM & Cell Adhesion | GO:0031012, GO:0030198, GO:0007160 |
-| Motility & Signaling | GO:0016477, GO:0000165, GO:0007265, GO:0035023 |
-| Vesicle Trafficking | GO:0016192, GO:0036258 |
-
-### Sensitivity Analysis
-
-AHP weights perturbed ±20% across 5 levels per criterion. Candidates labelled `robust_candidate` if rank is stable across all perturbations; `weight_sensitive_candidate` if rank SD > 1.5.
+**Random seeds.** `30032026` for the main pipeline (imputation, GSEA); `21082026` for the tier-3 permutation test and the null model in `RQ5_tier_audit_CTD.R`.
 
 ---
 
-## 🔬 Key Results
+## Repository structure
 
-CDS prioritisation converges on a coordinated **ECM/adhesion module** — integrins (ITGA2, ITGB1, ITGA3, ITGAV, ITGB4), fibronectin (FN1), and **AGRN** — as a coherent exosomal program in TNBC-derived vesicles.
+```
+├── Master run_all.R           # entry point
+├── AHP-CDS.Rproj
+├── renv.lock
+├── PXD056161/                 # main pipeline
+│   ├── data/
+│   ├── scripts/               # 01–12 + run_all.R
+│   └── results/{figures,tables}
+├── Ablation_Table/            # RQ1, RQ2, RQ3 analyses
+│   ├── data/                  # candidate_pool_merged.csv, CTD_curated_genes_diseases.csv
+│   ├── scripts/               # 01, 02, RQ1, RQ2, RQ5 + run_all.R
+│   └── results/{figures,tables}
+├── R/
+│   ├── Helper/                # ahp_weights, network_helper, string_api_helper, ranking_comparison_utils, ...
+│   └── Preamp/                # fetch_annotation_table.R, runs before the main pipeline
+├── Visualization/             # Fig 1, Fig 2, Fig S1 scripts (figures exported by hand)
+└── Archived/                  # superseded work, see below
+```
 
-**AGRN** (rank 9, CDS = 0.505) emerges as the highest-priority novel candidate: detected across all 6 samples with zero missing values, cross-dataset logFC concordance confirmed (PXD056161: +2.98; PXD012162: +3.43), and embedded within ECM proteoglycan and integrin interaction pathways showing 100% directional concordance with co-occurring proteins.
+`R/Helper/cross_dataset_helper.R` is only used by scripts in `Archived/`. Some other files under `data/` and `results/` (for example `PXD056161/results/tables/CDS_candidates_themed.csv`) are not produced or read by the current scripts; they are left in place on purpose.
 
-**FN1** (rank 1, CDS = 0.907) serves as a pipeline validation anchor — well-established in the exosome literature with 48 PubMed hits.
+**Archived/** holds work that is not part of the current preprint's results: earlier ablation and null-model experiments (GOSemSim / ECM gene-set nulls, network randomization, a 2×2 double null, a G–R circularity check), the v1 theme-classification scripts, the v1 cross-dataset validation on PXD012162, and early drafts of the figure scripts. Kept for the record, not maintained.
 
 ---
 
-## ⚠️ Limitations
+## From script to paper
 
-- **Sample size:** n=3 per condition limits statistical power; FDR thresholds not applied as pre-filters
-- **Cell line model:** MDA-MB-231 represents aggressive/metastatic TNBC; findings require validation in early-stage clinical specimens
-- **Single dataset primary:** Cross-dataset concordance (PXD012162) supports robustness but does not substitute for prospective validation
-- All results are **hypothesis-generating** and require independent experimental validation
+Mapping below is **proposed, unconfirmed**; S-numbers refer to the Supplementary Methods.
+
+| Script | Does | Paper |
+|---|---|---|
+| `R/Preamp/fetch_annotation_table.R` | biomaRt annotation table (GO terms, gene names) | S1 |
+| `PXD056161/scripts/01_load_and_filter_data.R` | downloads the PRIDE file, filters by MaxQuant output | S1 |
+| `02_metadata_and_matrix.R` | sample metadata, LFQ matrix | S1 |
+| `03_quality_control.R` | correlation matrix, PCA of the variance structure | S1 |
+| `04_missingness_analysis.R` | missingness patterns | S2 |
+| `05_imputation.R` | left-shifted Gaussian imputation, imputation QC | S2.5, Fig S1 |
+| `06_Differential_expression_analysis.R` | limma, Tumor − Normal | S3 |
+| `07_Robustness_analysis.R` | complete-case vs imputed comparison. "Robustness" here means robustness to imputation; it has nothing to do with the weight-perturbation labels of v1 | S3 |
+| `08_Pathway_enrichment_analysis.R` | Reactome GSEA | S4 |
+| `09_Extract_genes_for_STRING.R` | candidate pool, contaminant filter | S5 |
+| `10_Protein-protein_interaction_network.R`, `11_Network-expression_integration.R` | STRING network; 11 joins the limma table to the network table before scoring | S6 |
+| `12_CDS_via_AHP.R` | AHP weights, CDS | S7, Methods |
+| `Ablation_Table/scripts/01_ablation_conditions.R` | baseline rankings (FC-only, Centrality-only, Equal-weight), shared by all three RQs | RQ1–RQ3 |
+| `02_ren2019_gr.R` | RWR comparator | S8 |
+| `RQ1_ranking_difference.R` | rank-level comparison | RQ1, §5.1 |
+| `RQ2_mechanism_analysis.R` | contribution shares, LOCO | RQ2, §5.2 |
+| `RQ5_tier_audit_CTD.R` | CTD tiers, G*, null model | RQ3, §5.3, S9 |
+| `Visualization/Mega_Figure_1.R` | | Fig 1 |
+| `Visualization/Mega_Figure_2.R` | | Fig 2 |
+| `Visualization/Supplementary_Figure.R` | | Fig S1 |
+
+> **Naming note:** file names `RQ5_*` correspond to **RQ3** in the paper. The files kept their original names.
 
 ---
 
-## 🗂️ Biological Background
+## Main output files
 
-Tumor-derived exosomes mediate intercellular communication, ECM remodelling, and immune modulation. Proteins packaged into these vesicles are detectable non-invasively via liquid biopsy, making them attractive early-detection biomarker candidates. This project reanalyses publicly available LFQ proteomics data comparing MDA-MB-231 (TNBC) vs. MCF-10A (normal breast epithelial) exosomes.
+`PXD056161/results/tables/`
+- `annotated_gene_pool.csv` — candidate pool after annotation and contaminant filtering
+- `network_summary.csv` — candidates retained in the STRING network
+- `CDS_candidates_final_result.csv` — AHP-CDS scores and ranks
+- `differential_expression_imputed.csv`, `complete_case_DEA.csv`, `reactome_gsea_full.csv`, `reactome_gsea_filtered.csv`, `limma_network_table.csv`, and QC tables
+
+`Ablation_Table/results/tables/`
+- `ablation_ranks_partial.csv` — ranks under all baselines
+- `RQ1_*.csv`, `RQ2A_*.csv`, `RQ2B_*.csv` — RQ1 and RQ2 tables
+- `candidates_tiered_CTD.csv`, `RQ5_Gstar_sweep_results.csv`, `RQ5_null_distribution.csv` — tiers, G* sweep, null
+- `rwr_ranks_full.csv`, `ren2019_seed_genes.csv` — RWR comparator
+
+Figures are drawn by the scripts in `Visualization/` and exported by hand, so that resolution (dpi) and size can be set per figure. For that reason the `results/figures/` folders are mostly empty; they are kept only because the scripts still point to those paths.
 
 ---
 
-## 👤 Author
+## Scope and limitations
 
-**Nguyễn Mậu Tuệ**  
-University of Science, Vietnam National University Hanoi (K70)  
-*Analysis pipeline developed independently. Documentation assistance provided with the help of AI tools.*
+**Why there is no weight-sensitivity analysis.** Preprint v1 perturbed the AHP weights and labelled candidates by how stable their rank stayed. That analysis was removed: shaking the weights tests the researcher's original judgment, and the premise of AHP-CDS is that this judgment is made a priori and stated openly. The leave-one-criterion-out (LOCO) analysis that remains is also a form of sensitivity check, but it asks a different question: how much each criterion contributes to the rank of each protein, not whether the researcher's judgment was right.
+
+<!-- [?] Author's section, rest. Facts available to build from: n = 3 per condition; exploratory framing; no wet-lab validation; the Case-Study Selection Audit exists in Archived/ but is exploratory and not used in the paper. -->
+
+---
+
+## Citation, disclosure, license
+
+- **Cite:** the preprint (DOI at the top of this file)
+- **LLM use:** Large language models (Claude, GPT, and Gemini) were used during manuscript preparation in an adversarial-review capacity: to stress-test analytical claims, check internal consistency between reported statistics and their interpretation, and assist with language editing. All scientific content, analyses, and conclusions are the author's own; no manuscript text was generated from a prompt without direct authorship and verification. Further detail on this workflow is provided in the Supplementary Material.
+  This README was drafted with the assistance of Claude (Anthropic), which proposed its structure and the script-to-paper table from the repository's file listing. The author supplied the content and decisions and is responsible for it.
+- **License:** MIT, see `LICENSE`
+- **Author:** Nguyễn Mậu Tuệ, Faculty of Biology, VNU University of Science, Hanoi
