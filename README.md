@@ -67,7 +67,7 @@ source("Master_run_all.R")   # runs the preamp, the main pipeline and the ablati
 
 ## From script to paper
 
-Mapping below is **proposed, unconfirmed**; S-numbers refer to the Supplementary Methods.
+S-numbers refer to the Supplementary Methods.
 
 | Script | Does | Paper |
 |---|---|---|
